@@ -1,0 +1,53 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Zad 1
+      id: zad-1
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Zad 1
+        setup-command: mkdir -p build && cd build && cmake .. && make zad1 && chmod
+          +x zad1
+        command: cd build && ./zad1
+        timeout: 10
+        max-score: 1
+    - name: Zad 2
+      id: zad-2
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Zad 2
+        setup-command: mkdir -p build && cd build && cmake .. && make zad2 && chmod
+          +x zad2
+        command: cd build && ./zad2
+        timeout: 10
+        max-score: 2
+    - name: Zad 3
+      id: zad-3
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Zad 3
+        setup-command: mkdir -p build && cd build && cmake .. && make zad3 && chmod
+          +x zad3
+        command: cd build && ./zad3
+        timeout: 10
+        max-score: 2
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        ZAD-1_RESULTS: "${{steps.zad-1.outputs.result}}"
+        ZAD-2_RESULTS: "${{steps.zad-2.outputs.result}}"
+        ZAD-3_RESULTS: "${{steps.zad-3.outputs.result}}"
+      with:
+        runners: zad-1,zad-2,zad-3
