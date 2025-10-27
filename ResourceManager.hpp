@@ -1,8 +1,8 @@
 #pragma once
 
-#include <iostream>
-#include <stdexcept> 
 #include "Resource.hpp"
+#include <iostream>
+#include <stdexcept>
 
 class ResourceManager
 {
@@ -14,11 +14,6 @@ public:
 
     ResourceManager(const ResourceManager& other) : resource(new Resource(*other.resource)) {}
 
-    ResourceManager(ResourceManager&& other) noexcept : resource(other.resource)
-    {
-        other.resource = nullptr;
-    }
-
     ResourceManager& operator=(const ResourceManager& other)
     {
         if (this == &other)
@@ -26,17 +21,6 @@ public:
 
         delete resource;
         resource = new Resource(*other.resource);
-        return *this;
-    }
-
-    ResourceManager& operator=(ResourceManager&& other) noexcept
-    {
-        if (this == &other)
-            return *this;
-
-        delete resource;
-        resource       = other.resource;
-        other.resource = nullptr;
         return *this;
     }
 
