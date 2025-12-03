@@ -3,58 +3,6 @@
 #include <memory>
 #include <vector>
 
-class Resource
-{
-private:
-    static constexpr size_t   SIZE = 100'000'000;
-    std::unique_ptr< char[] > data_;
-
-public:
-    Resource() : data_(std::make_unique< char[] >(SIZE))
-    {
-        std::memset(data_.get(), 0, SIZE);
-        std::cout << "Resource constructed (" << SIZE << " bytes)\n";
-    }
-
-    Resource(const Resource& other) : data_(std::make_unique< char[] >(SIZE))
-    {
-        std::memcpy(data_.get(), other.data_.get(), SIZE);
-        std::cout << "Resource copied\n";
-    }
-
-    Resource(Resource&& other) noexcept : data_(std::move(other.data_))
-    {
-        std::cout << "Resource moved\n";
-    }
-
-    Resource& operator=(const Resource& other)
-    {
-        if (this != &other) {
-            data_ = std::make_unique< char[] >(SIZE);
-            std::memcpy(data_.get(), other.data_.get(), SIZE);
-        }
-        std::cout << "Resource copy-assigned\n";
-        return *this;
-    }
-
-    Resource& operator=(Resource&& other) noexcept
-    {
-        if (this != &other) {
-            data_ = std::move(other.data_);
-        }
-        std::cout << "Resource move-assigned\n";
-        return *this;
-    }
-
-    ~Resource() { std::cout << "Resource destroyed\n"; }
-
-    double get() const
-    {
-        return 42.0;
-    }
-};
-
-
 class ResourceManager
 {
 private:
