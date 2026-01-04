@@ -1,84 +1,53 @@
+#include <cstring>
 #include <iostream>
-#include <stdexcept>
-#include <utility>
-
-class Resource
-{
-public:
-    Resource() {}
-    Resource(const Resource&) {}
-    Resource(Resource&&) noexcept {}
-    Resource& operator=(const Resource&) { return *this; }
-    Resource& operator=(Resource&&) noexcept { return *this; }
-    ~Resource() {}
-
-    double get() const { return 20; }
-};
+#include <memory>
+#include <vector>
 
 class ResourceManager
 {
 private:
-    Resource* resource;
+    std::unique_ptr< Resource > resource_;
 
 public:
-    ResourceManager() : resource(new Resource()) {}
-
-    ResourceManager(const ResourceManager& other) : resource(new Resource(*other.resource)) {}
-
-    ResourceManager(ResourceManager&& other) noexcept : resource(other.resource)
+    ResourceManager() : resource_(std::make_unique< Resource >())
     {
-        other.resource = nullptr;
+        std::cout << "ResourceManager constructed\n";
     }
+
+    ResourceManager(const ResourceManager& other)
+        : resource_(other.resource_ ? std::make_unique< Resource >(*other.resource_) : nullptr)
+    {
+        std::cout << "ResourceManager copied\n";
+    }
+
+    ResourceManager(ResourceManager&& other) noexcept = default;
 
     ResourceManager& operator=(const ResourceManager& other)
     {
-        if (this == &other)
-            return *this;
-
-        delete resource;
-        resource = new Resource(*other.resource);
+        std::cout << "ResourceManager copy-assigned\n";
+        if (this != &other) {
+            resource_ = other.resource_ ? std::make_unique< Resource >(*other.resource_) : nullptr;
+        }
         return *this;
     }
 
-    ResourceManager& operator=(ResourceManager&& other) noexcept
-    {
-        if (this == &other)
-            return *this;
+    ResourceManager& operator=(ResourceManager&& other) noexcept = default;
 
-        delete resource;
-        resource       = other.resource;
-        other.resource = nullptr;
-        return *this;
-    }
+    ~ResourceManager() { std::cout << "ResourceManager destroyed\n"; }
 
-    ~ResourceManager() { delete resource; }
-
-    double get() const
-    {
-        if (!resource)
-            throw std::runtime_error("Brak zasobu!");
-        return resource->get();
-    }
+    double get() const { return resource_->get(); }
 };
+
 int main()
 {
-    std::cout << "Tworzenie r1\n";
-    ResourceManager r1;
-    std::cout << "Wynik r1.get(): " << r1.get() << "\n\n";
+    std::cout << "sizeof(Resource): " << sizeof(Resource) << " bytes\n";
+    std::cout << "sizeof(ResourceManager): " << sizeof(ResourceManager) << " bytes\n\n";
 
-    std::cout << "Kopiowanie r2 = r1\n";
-    ResourceManager r2 = r1;
-    std::cout << "Wynik r2.get(): " << r2.get() << "\n\n";
+    ResourceManager manager;
+    std::cout << "manager.get() = " << manager.get() << "\n\n";
 
-    std::cout << "Przenoszenie r3 = std::move(r1)\n";
-    ResourceManager r3 = std::move(r1);
-    std::cout << "Wynik r3.get(): " << r3.get() << "\n\n";
+    ResourceManager copy  = manager;
+    ResourceManager moved = std::move(manager);
 
-    std::cout << "Przypisanie kopiujace r2 = r3\n";
-    r2 = r3;
-
-    std::cout << "Przypisanie przenoszace r3 = std::move(r2)\n";
-    r3 = std::move(r2);
-
-    return 0;
+    std::cout << "\nKoniec programu.\n";
 }
